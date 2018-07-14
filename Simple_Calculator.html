@@ -1,0 +1,74 @@
+<!DOCTYPE = html>
+<meta charset="UTF-8">
+<html>
+<title>Simple Calculator</title>
+<head>
+	<link type="text/css" rel="stylesheet" href="Simple_Calculator.css">
+</head>
+	<body>
+		<div id="background">
+		</div>
+		<div id="calc-body">
+			<div id="top-label">
+			</div>
+			<div id="display-container">
+				<div id="display">
+					<!--24 digits wide MAX-->
+				</div>
+			</div>
+			<div id="clear-func-pad">
+				<button value='del' class="buttons" id="del">del
+				</button>
+				<button value='AC' class="buttons" id="AC">A/C
+				</button>
+			</div>
+			<div id="number-pad">
+				<div class="numpad-row" id="numpad-row-one">
+					<button value='1' class="buttons" id="one">1
+					</button>
+					<button value='2' class="buttons" id="two">2
+					</button>
+					<button value='3' class="buttons" id="three">3
+					</button>
+				</div>
+				<div class="numpad-row" id="numpad-row-two">
+					<button value='4' class="buttons" id="four">4
+					</button>
+					<button value='5' class="buttons" id="five">5
+					</button>
+					<button value='6' class="buttons" id="six">6
+					</button>
+				</div>
+				<div class="numpad-row" id="numpad-row-three">
+					<button value='7' class="buttons" id="seven">7
+					</button>
+					<button value='8' class="buttons" id="eight">8
+					</button>
+					<button value='9' class="buttons" id="nine">9
+					</button>
+				</div>
+				<div class="numpad-row" id="numpad-row-four">
+					<button value='.' class="buttons" id="decimal">.
+					</button>
+					<button value='0' class="buttons" id="zero">0
+					</button>
+				</div>
+			</div>
+			<div id="function-column">
+				<button value="+" class="func-button buttons" id="add">+
+				</button>
+				<button value="-" class="func-button buttons" id="subtract">-
+				</button>
+				<button value="/" class="func-button buttons" id="divide">/
+				</button>
+				<button value="*" class="func-button buttons" id="multiply">*
+				</button>
+				<button value="=" class="func-button buttons" id="evaluate">=
+				</button>
+			</div>
+			<div id="bottom-label">
+			</div>
+		</div>
+	<script type="Text/JavaScript" src="Simple_Calculator.js"></script>
+	</body>
+</html>
