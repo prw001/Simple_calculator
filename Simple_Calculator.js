@@ -3,74 +3,178 @@ const positiveInts = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const operators = ['+', '-', '/', '*', '=', '.'];
 const funcs = ['AC', 'del'];
 const display = document.getElementById('display');
-var initialValue = 0;
-var expression = [];
-var index = 0;
-var numString = '';
+const funcDisplay = document.getElementById('func-Display');
+const clear = document.getElementById('AC')
+
+var runningTotal = 0;
 var isFirstNum = true;
 var hasDecimal = false;
+var operatorInEffect = true;
+var eqOperatorUsed = false;
+var previousNum = '';
+var currentNum = '';
+var prevOpr = '';
+var currentOpr = '';
+var calcLocked = false;
+var shiftDown = false;
 
 buttons.forEach(button => button.addEventListener('click', buttonClicked));
+window.addEventListener('keyup', shiftUp);
+
+window.addEventListener('keydown', function(e){
+	if(e.keyCode === 16){
+		shiftDown = true;
+		console.log(shiftDown);
+	}else{
+		const boardButton = document.querySelector(`button[data-key="${e.keyCode}"]`)
+		if(shiftDown && boardButton.value === '8'){
+			keyPressed('*');
+		}else if(shiftDown && boardButton.value === '='){
+			keyPressed('+');
+		}else{
+			keyPressed(boardButton.value);
+		};
+	};
+});
 
 
-function buttonClicked(e){
+function shiftUp(){
+	shiftDown = false;
+	console.log(shiftDown);
+};
+
+
+function keyPressed(buttonVal){
+	selectType(buttonVal);
+};
+
+function buttonClicked(){
 	const buttonVal = this.value;
-	switch(true){
-		case (positiveInts.includes(Number(buttonVal))):
-			if(numString.length < 16){
-				display.textContent += buttonVal;
-				integerPicked(buttonVal);
-			};
+	selectType(buttonVal);
+};
+
+function selectType(buttonVal){
+	if(!calcLocked || (calcLocked && (buttonVal === 'AC'))){
+		switch(true){
+			case (positiveInts.includes(Number(buttonVal))):
+				selectionIsInt(buttonVal);
+				break;
+			case (operators.includes(buttonVal)):
+				selectionIsOpr(buttonVal);
+				break;
+			case (funcs.includes(buttonVal)):
+				funcUsed(buttonVal);
+				break;
+			case (buttonVal === '0'):
+				selectionIsZero(buttonVal);
+				break;
+			default:
+				display.textContent = "INPUT ERROR";
+				calcLock();
+		};
+	};
+}
+
+function selectionIsInt(buttonVal){
+	if(eqOperatorUsed){
+		eqOperatorUsed = false;
+		currentNum = '';
+		display.textContent = '';
+	};
+	if(currentNum.length < 16){
+		if(isFirstNum){
+			display.textContent = '';
+			operatorInEffect = false;
 			isFirstNum = false;
-			break;
-		case (operators.includes(buttonVal)):
+		};
+	display.textContent += buttonVal;
+	integerPicked(buttonVal);
+	};
+};
+
+function selectionIsOpr(buttonVal){
+	if(buttonVal === '.'){
+		operatorCalled(buttonVal);
+	}else{
+		if(eqOperatorUsed){
+			funcDisplay.textContent = buttonVal;
+			eqOperatorUsed = false;
 			operatorCalled(buttonVal);
-			break;
-		case (funcs.includes(buttonVal)):
-			funcUsed(buttonVal);
-			break;
-		case (buttonVal === '0'):
-			if(!isFirstNum){
-				display.textContent += 0;
-			};
-			pressedZero();
-			break;
-		default:
-			display.textContent = "ERROR";
+			prevOpr = buttonVal;
+		};
+		if(!operatorInEffect && !eqOperatorUsed){
+			funcDisplay.textContent = buttonVal;
+			operatorCalled(buttonVal);
+			prevOpr = buttonVal;
+			operatorInEffect = true;
+		};
+	};
+};
+
+function selectionIsZero(buttonVal){
+	if(!isFirstNum){
+		display.textContent += 0;
+		currentNum += buttonVal;
 	};
 };
 
 function integerPicked(currentInt){
-	numString += currentInt;
-	console.log(numString);
+	currentNum += currentInt;
+	console.log(currentNum);
 };
 
-function pressedZero(){
-
-};
-
-function operatorCalled(currentOp){
-	switch(currentOp){
+function operatorCalled(buttonVal){
+	currentOpr = buttonVal;
+	switch(currentOpr){
 		case '+':
 		case '-':
 		case '/':
 		case '*':
-			expression.push(Number(numString));
-			display.textContent = '';
-			numString = '';
-			hasDecimal = false;
-			expression.push(currentOp);
+			if(previousNum.length == 0){
+				previousNum = currentNum;
+				currentNum = '';
+				prevOpr = currentOpr;
+				console.log(prevOpr);
+				isFirstNum = true;
+				hasDecimal = false;
+			}else{
+				console.log(prevOpr);
+				runningTotal = evaluate(previousNum, prevOpr, currentNum);
+				display.textContent = runningTotal;
+				previousNum = runningTotal;
+				currentNum = '';
+				prevOpr = currentOpr;
+				isFirstNum = true;
+				hasDecimal = false;
+			};
 			break;
 		case '=':
-			expression.push(Number(numString));
-			hasDecimal = false;
-			display.textContent = '';
-			numString = '';
-			evaluate();
+			//previousNum !== '' && prevOpr !== ''
+			if(!eqOperatorUsed){
+				runningtotal = evaluate(previousNum, prevOpr, currentNum);
+				display.textContent = runningtotal;
+				previousNum = ''
+				currentNum = String(runningtotal);
+				currentOpr = ''
+				prevOpr = '';
+				isFirstNum = true;
+				hasDecimal = false;
+				operatorInEffect = false;
+				eqOperatorUsed = true;
+			};
 			break;
 		case '.':
 			if(!hasDecimal){
-				numString += '.'
+				if(eqOperatorUsed){
+					eqOperatorUsed = false;
+					currentNum = '';
+				};
+				if(isFirstNum){
+					isFirstNum = false;
+					operatorInEffect = false;
+					display.textContent = '';
+				};
+				currentNum += '.'
 				display.textContent += '.';
 				hasDecimal = true;
 			};
@@ -82,31 +186,78 @@ function operatorCalled(currentOp){
 
 function funcUsed(currentFunc){
 	if(currentFunc === "AC"){
-		numString = ''
-		initialValue = 0;
-		index = 0;
-		expression = [];
+		previousNum = '';
+		currentNum = '';
+		prevOpr = '';
+		currentOpr = '';
 		isFirstNum = true;
 		hasDecimal = false;
 		display.textContent = '';
+		funcDisplay.textContent = '';
+		if(calcLocked){
+			calcLock();
+		}
 	}else{
-		display.textContent = numString.slice(0, (numString.length - 1));
-		if(numString[(numString.length - 1)] === '.'){
-			hasDecimal = false;
+		if(!eqOperatorUsed && !operatorInEffect){
+			display.textContent = currentNum.slice(0, (currentNum.length - 1));
+			if(currentNum[(currentNum.length - 1)] === '.'){
+				hasDecimal = false;
+			};
+			currentNum = currentNum.slice(0, (currentNum.length - 1));
 		};
-		numString = numString.slice(0, (numString.length - 1));
 	};
 };
 
-function evaluate(){
+function evaluate(numOne, opr, numTwo){
+	var evaluation;
+	switch(opr){
+		case '+':
+			evaluation = sum(numOne, numTwo);
+			break;
+		case '-':
+			evaluation = subtract(numOne, numTwo);
+			break;
+		case '*':
+			evaluation = multiply(numOne, numTwo);
+			break;
+		case '/':
+			evaluation = divide(numOne, numTwo);
+			break;
+		default:
+			calcLock();
+			evaluation = 'Invalid Input';
+	};
 
+	return evaluation;
 };
 
 
+function multiply(a, b){
+	return ((Number(a)) * (Number(b)));
+};
 
+function divide(a, b){
+	if(Number(b) == 0 || Number(b) == NaN){
+		calcLock();
+		return "Div 0 Error";
+	}else{
+		return (Number(a) / Number(b));
+	};
+};
 
+function sum(a, b){
+	return (Number(a) + Number(b));
+};
 
+function subtract(a, b){
+	return (Number(a) - Number(b));
+};
 
-function toggleStyle(e){
-
+function calcLock(){
+	if(calcLocked){
+		calcLocked = false;
+	}else{
+		calcLocked = true;
+	};
+	clear.classList.toggle('lockout');
 };
